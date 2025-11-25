@@ -121,13 +121,7 @@ venv.bak/
 
 
 .tox
-*.h5
-!data.h5
-
 *yacctab.py
 *lextab.py
 
 .mu_repo
-
-
-**/README.rst
