@@ -157,6 +157,6 @@ factory. For instance:
 
 .. note::
 
-    The ``get_apply_deserializer`` factory method as a name argument (*only_object*) being a boolean. if True, the
+    The ``get_apply_deserializer`` factory method has a name argument (*only_object*) being a boolean. if True, the
     returned object is the deserialized object itself otherwise it is a tuple containing the object AND the eventual
     remaining bytes
