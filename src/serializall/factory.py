@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Callable, List, Any, Optional, Tuple, TypeVar, Union
+from typing import Callable, List, Optional, Tuple, TypeVar, Union
 
 from numpy.typing import NDArray
 
-from . import utils
+from src.serializall import utils
 
 
 class SerializableBase(metaclass=ABCMeta):

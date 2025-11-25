@@ -1,6 +1,6 @@
 import pytest
 
-from pymodaq_utils.serialize import utils
+from serializall import utils
 
 
 class TestStaticClassMethods:

@@ -4,9 +4,8 @@ Created the 20/10/2023
 
 @author: Sebastien Weber
 """
-from enum import Enum
 import numbers
-from typing import Optional, Tuple, List, Union, TYPE_CHECKING, Any
+from typing import Tuple, List
 
 import numpy as np
 

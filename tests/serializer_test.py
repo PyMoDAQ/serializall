@@ -1,15 +1,15 @@
 import numpy as np
 import pytest
 
-from pymodaq_utils.serialize.factory import SerializableFactory
-from pymodaq_utils.serialize.serializer import (StringSerializeDeserialize as SSD,
-                                                BytesSerializeDeserialize as BSD,
-                                                ScalarSerializeDeserialize as ScSD,
-                                                NdArraySerializeDeserialize as NdSD,
-                                                ListSerializeDeserialize as LSD,
-                                                TupleSerializeDeserialize as TSD,
-                                                NoneSerializeDesieralize as NSD,
-                                                DictSerializeDeserialize as DSD,
+from serializall.factory import SerializableFactory
+from serializall.serializer import (StringSerializeDeserialize as SSD,
+                                    BytesSerializeDeserialize as BSD,
+                                    ScalarSerializeDeserialize as ScSD,
+                                    NdArraySerializeDeserialize as NdSD,
+                                    ListSerializeDeserialize as LSD,
+                                    TupleSerializeDeserialize as TSD,
+                                    NoneSerializeDeserialize as NSD,
+                                    DictSerializeDeserialize as DSD,
                                                 )
 
 ser_factory = SerializableFactory()
