@@ -45,7 +45,7 @@ def test_none_serialization():
 
 
 def test_string_serialization():
-    s = 'ert'
+    s = 'a string to serialize'
     obj_type = 'str'
 
     assert SSD.serialize(s) == b'\x00\x00\x00' + chr(len(s)).encode() + s.encode()

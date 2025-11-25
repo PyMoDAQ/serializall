@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Tuple, TypeVar, Union
 
 from numpy.typing import NDArray
 
-from src.serializall import utils
+from serializall import utils
 
 
 class SerializableBase(metaclass=ABCMeta):
