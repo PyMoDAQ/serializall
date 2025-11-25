@@ -1,0 +1,10 @@
+sphinx
+sphinx_rtd_theme>=1.2.2
+releases
+sphinx-csv-filter
+pillow
+toml
+pyqt5
+numpydoc
+sphinx-datatables
+

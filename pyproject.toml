@@ -1,0 +1,66 @@
+[project]
+name = "serializall"
+authors = [
+    { name = "Sébastien Weber", email = "sebastien.weber@cemes.fr" },
+    { name = "Maria Flesch", email = "maria.flesch@outlook.fr" },
+
+]
+dynamic = ["version"]
+
+description = "Serialization of any python objects using a Factory Pattern"
+readme = "README.rst"
+license = {file = "LICENSE"}
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Natural Language :: English",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
+]
+
+requires-python = ">=3.8"
+
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+    "hatch",
+    "flake8",
+    "pytest",
+    "pytest-cov",
+    "sphinx",
+    "sphinx_rtd_theme",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/PyMoDAQ/serializall"
+"Bug Tracker" = "https://github.com/PyMoDAQ/serializall/issues"
+
+
+[build-system]
+requires = ["hatchling>=1.9.0", "hatch-vcs", "toml"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+]
+
+[tool.coverage.run]
+omit = [
+    "*/examples/*",
+    "*/resources/*"
+    ]
