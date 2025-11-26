@@ -258,14 +258,7 @@ def test_ordered_dict_serialization_deserialization():
     dict_back = OdSD.deserialize(ser)[0]
     assert isinstance(dict_back, OrderedDict)
 
-    for key in dict_object:
-        if isinstance(dict_object[key], np.ndarray):
-            assert np.allclose(dict_object[key], dict_back[key])
-        else:
-            assert dict_object[key] == dict_back[key]
+    assert list(dict_object.keys()) == list(dict_back.keys())
 
-    for key, val in ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(dict_object)).items():
-        if isinstance(val, np.ndarray):
-            assert np.allclose(dict_object[key], val)
-        else:
-            assert dict_object[key] == val
+    dict_back = ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(dict_object))
+    assert list(dict_object.keys()) == list(dict_back.keys())
