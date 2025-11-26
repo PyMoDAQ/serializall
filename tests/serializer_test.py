@@ -1,6 +1,3 @@
-import collections
-import typing
-
 import numpy as np
 import pytest
 from collections import OrderedDict
