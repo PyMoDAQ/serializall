@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Callable, List, Optional, Tuple, TypeVar, Union
+from collections import OrderedDict
+import re
 
 from numpy.typing import NDArray
 
@@ -62,7 +64,7 @@ class SerializableBase(metaclass=ABCMeta):
 
 
 # List of all objects serializable via the serializer
-SERIALIZABLE = Union[None, bytes, str, int, float, complex, list, tuple, dict, NDArray, SerializableBase]
+SERIALIZABLE = Union[None, bytes, str, int, float, complex, list, tuple, dict, NDArray, SerializableBase, OrderedDict]
 
 Serializable = TypeVar("Serializable", bound=SERIALIZABLE)
 _SerializableClass = TypeVar("_SerializableClass", bound=SerializableBase)
@@ -133,9 +135,41 @@ class SerializableFactory:
                 serializer=cls.add_type_to_serialize(serialize_method),
                 deserializer=deserialize_method)
 
+    @staticmethod
+    def check_type(obj_type_str: str, registered_type: str) -> bool:
+        """
+        Check if 'obj_type_str' matches the string representation of a type.
+        The function extracts the last identifier of 'obj_type_str' and 'registered_type',
+        which should be the class names.
+
+        Parameters
+        ----------
+        obj_type_str: str
+            type name to match
+        registered_type: str
+            string representation of a type
+
+        Returns
+        -------
+        bool: True if the types matches
+
+        Examples
+        --------
+        >>> SerializableFactory.check_type('list', '<class \'list\'>') == True
+        >>> SerializableFactory.check_type('list', '<class \'pymodaq_gui.parameter.pymodaq_ptypes.list.ListParameter\'>') == False
+        >>> SerializableFactory.check_type('ListParameter', '<class \'pymodaq_gui.parameter.pymodaq_ptypes.list.ListParameter\'>') == True
+        """
+        obj_type_str_matches = re.findall('[a-zA-Z0-9_]+', obj_type_str)
+        registered_type_matches = re.findall('[a-zA-Z0-9_]+', registered_type)
+
+        if not obj_type_str_matches or not registered_type_matches:
+            return False
+
+        return obj_type_str_matches[-1] == registered_type_matches[-1]
+
     def get_type_from_str(self, obj_type_str: str) -> type:
         for k in self.serializable_registry:
-            if obj_type_str in str(k):
+            if self.check_type(obj_type_str, str(k)):
                 return k
         raise ValueError(f"Unknown type '{obj_type_str}'")
 

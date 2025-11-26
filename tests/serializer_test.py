@@ -1,5 +1,9 @@
+import collections
+import typing
+
 import numpy as np
 import pytest
+from collections import OrderedDict
 
 from serializall.factory import SerializableFactory
 from serializall.serializer import (StringSerializeDeserialize as SSD,
@@ -10,6 +14,7 @@ from serializall.serializer import (StringSerializeDeserialize as SSD,
                                     TupleSerializeDeserialize as TSD,
                                     NoneSerializeDeserialize as NSD,
                                     DictSerializeDeserialize as DSD,
+                                    OrderedDictSerializeDeserialize as OdSD,
                                                 )
 
 ser_factory = SerializableFactory()
@@ -229,6 +234,32 @@ def test_dict_serialization_deserialization():
 
     dict_back = DSD.deserialize(ser)[0]
     assert isinstance(dict_back, dict)
+
+    for key in dict_object:
+        if isinstance(dict_object[key], np.ndarray):
+            assert np.allclose(dict_object[key], dict_back[key])
+        else:
+            assert dict_object[key] == dict_back[key]
+
+    for key, val in ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(dict_object)).items():
+        if isinstance(val, np.ndarray):
+            assert np.allclose(dict_object[key], val)
+        else:
+            assert dict_object[key] == val
+
+
+def test_ordered_dict_serialization_deserialization():
+
+    dict_object = OrderedDict(alist=['hjk', 'jkgjg', 'lkhlkhl'],
+                       astring='astring',
+                       afloat=10.1,
+                       anarray=np.array([45, 67, 87654]))
+
+    ser = OdSD.serialize(dict_object)
+    assert isinstance(ser, bytes)
+
+    dict_back = OdSD.deserialize(ser)[0]
+    assert isinstance(dict_back, OrderedDict)
 
     for key in dict_object:
         if isinstance(dict_object[key], np.ndarray):
