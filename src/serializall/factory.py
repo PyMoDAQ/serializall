@@ -1,14 +1,14 @@
-from abc import ABCMeta, abstractmethod
 from typing import Callable, List, Optional, Tuple, TypeVar, Union
 from collections import OrderedDict
 import re
+import inspect
 
 from numpy.typing import NDArray
 
 from serializall import utils
 
 
-class SerializableBase(metaclass=ABCMeta):
+class SerializableBase:
     """Base class for a Serializer. """
 
     @classmethod
@@ -22,7 +22,6 @@ class SerializableBase(metaclass=ABCMeta):
         return cls.__class__
 
     @staticmethod
-    @abstractmethod
     def serialize(obj: "SerializableBase") -> bytes:
         """  Implements self serialization into bytes
 
@@ -42,7 +41,6 @@ class SerializableBase(metaclass=ABCMeta):
         ...
 
     @staticmethod
-    @abstractmethod
     def deserialize(bytes_str: bytes) -> Tuple["SerializableBase", bytes]:
         """ Implements deserialization into self type from bytes
 
@@ -116,6 +114,14 @@ class SerializableFactory:
         def inner_wrapper(
             wrapped_class: type[_SerializableClass],
         ) -> type[_SerializableClass]:
+
+            if not hasattr(wrapped_class, 'serialize'):
+                raise NotImplementedError(
+                    f'Serialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.serialize)}')
+            if not hasattr(wrapped_class, 'deserialize'):
+                raise NotImplementedError(
+                    f'Deserialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.deserialize)}')
+
             cls.register_from_type(wrapped_class,
                                    wrapped_class.serialize,
                                    wrapped_class.deserialize)
@@ -159,13 +165,12 @@ class SerializableFactory:
         >>> SerializableFactory.check_type('list', '<class \'pymodaq_gui.parameter.pymodaq_ptypes.list.ListParameter\'>') == False
         >>> SerializableFactory.check_type('ListParameter', '<class \'pymodaq_gui.parameter.pymodaq_ptypes.list.ListParameter\'>') == True
         """
-        obj_type_str_matches = re.findall('[a-zA-Z0-9_]+', obj_type_str)
         registered_type_matches = re.findall('[a-zA-Z0-9_]+', registered_type)
 
-        if not obj_type_str_matches or not registered_type_matches:
+        if not obj_type_str or not registered_type_matches:
             return False
 
-        return obj_type_str_matches[-1] == registered_type_matches[-1]
+        return obj_type_str == registered_type_matches[-1]
 
     def get_type_from_str(self, obj_type_str: str) -> type:
         for k in self.serializable_registry:

@@ -262,3 +262,11 @@ def test_ordered_dict_serialization_deserialization():
 
     dict_back = ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(dict_object))
     assert list(dict_object.keys()) == list(dict_back.keys())
+
+
+def test_registration_without_serialization():
+    with pytest.raises(NotImplementedError):
+        @SerializableFactory.register_decorator()
+        class TestClass:
+            def __init__(self):
+                self.a = 'a'
