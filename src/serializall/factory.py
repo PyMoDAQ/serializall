@@ -117,10 +117,12 @@ class SerializableFactory:
 
             if not hasattr(wrapped_class, 'serialize'):
                 raise NotImplementedError(
-                    f'Serialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.serialize)}')
+                    f'Serialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.serialize)}'
+                    f'\nSee: https://github.com/PyMoDAQ/serializall?tab=readme-ov-file#serializall')
             if not hasattr(wrapped_class, 'deserialize'):
                 raise NotImplementedError(
-                    f'Deserialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.deserialize)}')
+                    f'Deserialization method for {wrapped_class} is missing: {inspect.signature(SerializableBase.deserialize)}'
+                    f'\nSee: https://github.com/PyMoDAQ/serializall?tab=readme-ov-file#serializall')
 
             cls.register_from_type(wrapped_class,
                                    wrapped_class.serialize,
