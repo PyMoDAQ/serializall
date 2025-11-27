@@ -12,6 +12,50 @@ serialization using builtins (see example).
 
 It is currently used in projects such as PyMoDAQ and pyqtgraph.
 
+
+Compatibility
++++++++++++++
+
++-------------+-------------+---------------+
+|             | Linux       | Windows       |
++=============+=============+===============+
+| Python 3.9  | |39-linux|  | |39-windows|  |
++-------------+-------------+---------------+
+| Python 3.10 | |310-linux| | |310-windows| |
++-------------+-------------+---------------+
+| Python 3.11 | |311-linux| | |311-windows| |
++-------------+-------------+---------------+
+| Python 3.12 | |312-linux| | |312-windows| |
++-------------+-------------+---------------+
+
+
+
+
+
+.. |39-linux| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Linux_3.9.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |310-linux| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Linux_3.10.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |311-linux| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Linux_3.11.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |312-linux| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Linux_3.12.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |39-windows| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Windows_3.9.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |310-windows| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Windows_3.10.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |311-windows| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Windows_3.11.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
+.. |312-windows| image:: https://raw.githubusercontent.com/PyMoDAQ/serializall/main/tests_Windows_3.12.svg
+    :target: https://github.com/PyMoDAQ/serializall/actions/workflows/tests.yml
+
 Usage
 +++++
 
