@@ -6,6 +6,7 @@ Created the 20/10/2023
 """
 import numbers
 from typing import Tuple, List
+from collections import OrderedDict
 
 import numpy as np
 
@@ -351,6 +352,41 @@ class DictSerializeDeserialize(SerializableBase):
         return dict_object, remaining_bytes
 
 
+class OrderedDictSerializeDeserialize(SerializableBase):
+    @staticmethod
+    def serialize(ordered_dict: OrderedDict) -> bytes:
+        """
+        Convert an OrderedDict object into a bytes message together with the info to convert it back
+
+        Parameters
+        ----------
+        ordered_dict: OrderedDict
+            the ordered dict to convert
+
+        Returns
+        -------
+        bytes: the total bytes message to serialize the OrderedDict object
+        """
+        if not isinstance(ordered_dict, OrderedDict):
+            raise TypeError(f'{ordered_dict} should be an OrderedDict, not a {type(ordered_dict)}')
+
+        dict_list = list(ordered_dict.items())
+        return ListSerializeDeserialize.serialize(dict_list)
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[OrderedDict, bytes]:
+        """
+        Convert bytes into an OrderedDict object
+
+        Returns
+        -------
+        OrderedDict: the decoded ordered dict
+        bytes: the remaining bytes string if any
+        """
+        dict_list, remaining_bytes = ListSerializeDeserialize.deserialize(bytes_str)
+        return OrderedDict(dict_list), remaining_bytes
+
+
 ser_factory.register_from_type(
     type(None), NoneSerializeDeserialize.serialize, NoneSerializeDeserialize.deserialize
 )
@@ -381,6 +417,10 @@ ser_factory.register_from_type(tuple,
 ser_factory.register_from_type(dict,
                                DictSerializeDeserialize.serialize,
                                DictSerializeDeserialize.deserialize)
+
+ser_factory.register_from_type(OrderedDict,
+                               OrderedDictSerializeDeserialize.serialize,
+                               OrderedDictSerializeDeserialize.deserialize)
 
 
 
