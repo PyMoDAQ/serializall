@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 from collections import OrderedDict
+from datetime import date, datetime, time, timezone
+from pathlib import Path, PurePath
 
 from serializall.factory import SerializableFactory
 from serializall.serializer import (StringSerializeDeserialize as SSD,
@@ -270,3 +272,47 @@ def test_registration_without_serialization():
         class TestClass:
             def __init__(self):
                 self.a = 'a'
+
+
+NUMPY_KEPT = [np.float16(1.5), np.float32(0.1), np.int8(-3), np.int16(7), np.int32(3), np.uint8(200),
+              np.uint16(7), np.uint32(9), np.uint64(2 ** 63 + 1), np.complex64(1 + 2j)]
+
+
+@pytest.mark.parametrize('scalar', NUMPY_KEPT)
+def test_numpy_scalar_keeps_its_dtype(scalar):
+    result = ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(scalar))
+    assert type(result) is type(scalar)
+    assert result == scalar
+
+
+@pytest.mark.parametrize('scalar, python_type', [(np.float64(1.5), float), (np.int64(-3), int),
+                                                 (np.complex128(1 + 2j), complex), (np.bool_(True), bool)])
+def test_numpy_scalar_with_python_equivalent_becomes_python(scalar, python_type):
+    result = ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(scalar))
+    assert type(result) is python_type
+    assert result == scalar
+
+
+@pytest.mark.parametrize('obj', [{1, 'a', 2.5}, set(), frozenset({1, 2}),
+                                 Path('/some/path/file.h5'), Path('relative') / 'file',
+                                 datetime(2026, 11, 14, 13, 47, 6, 123456),
+                                 datetime(2026, 1, 1, tzinfo=timezone.utc),
+                                 date(2026, 11, 14), time(13, 47, 6, 5)])
+def test_standard_types_round_trip(obj):
+    result = ser_factory.get_apply_deserializer(ser_factory.get_apply_serializer(obj))
+    assert result == obj
+    assert isinstance(result, type(obj)) or isinstance(obj, PurePath)
+
+
+def test_new_types_inside_containers_with_remaining_bytes():
+    obj = {'a': [np.float32(1), {1, 2}], 'b': (Path('/x'), datetime(2026, 1, 1)), 'c': np.int32(4)}
+    bytes_str = ser_factory.get_apply_serializer(obj) + b'rest'
+    result, remaining = ser_factory.get_apply_deserializer(bytes_str, only_object=False)
+    assert remaining == b'rest'
+    assert result == obj
+    assert type(result['c']) is np.int32 and type(result['a'][0]) is np.float32
+
+
+def test_unregistered_type_still_raises():
+    with pytest.raises(NotImplementedError):
+        ser_factory.get_apply_serializer(object())
