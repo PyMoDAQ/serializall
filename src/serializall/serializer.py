@@ -5,8 +5,10 @@ Created the 20/10/2023
 @author: Sebastien Weber
 """
 import numbers
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from collections import OrderedDict
+from datetime import date, datetime, time
+from pathlib import Path, PosixPath, PurePath, WindowsPath
 
 import numpy as np
 
@@ -387,6 +389,105 @@ class OrderedDictSerializeDeserialize(SerializableBase):
         return OrderedDict(dict_list), remaining_bytes
 
 
+class NumpyScalarSerializeDeserialize(SerializableBase):
+    """Numpy scalars (np.float32, np.int8, np.bool_...): same bytes as the python scalars, but the
+    deserialized object is a numpy scalar of the same dtype.
+
+    The python-compatible types np.float64, np.int64, np.complex128 and np.bool_ are deserialized as the
+    python float, int, complex and bool: same value, same behaviour, and what libraries expect (json...).
+    """
+    @staticmethod
+    def serialize(scalar: np.generic) -> bytes:
+        """ Convert a numpy scalar into a bytes message: dtype, length, raw bytes """
+        array = np.array([scalar])
+        data_bytes = array.tobytes()
+        bytes_string = StringSerializeDeserialize.serialize(array.dtype.descr[0][1])
+        bytes_string += utils.int_to_bytes(len(data_bytes))
+        bytes_string += data_bytes
+        return bytes_string
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[np.generic, bytes]:
+        """ Convert bytes into a numpy scalar of the serialized dtype
+
+        Returns
+        -------
+        np.generic: the decoded scalar
+        bytes: the remaining bytes string if any
+        """
+        data_type, remaining_bytes = StringSerializeDeserialize.deserialize(bytes_str)
+        data_len, remaining_bytes = utils.get_int_from_bytes(remaining_bytes)
+        number_bytes, remaining_bytes = utils.split_nbytes(remaining_bytes, data_len)
+        return np.frombuffer(number_bytes, dtype=data_type)[0], remaining_bytes
+
+
+class SetSerializeDeserialize(SerializableBase):
+    """set and frozenset, serialized as a list of their items (in no particular order)"""
+    @staticmethod
+    def serialize(set_object: Union[set, frozenset]) -> bytes:
+        return ListSerializeDeserialize.serialize(list(set_object))
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[set, bytes]:
+        items, remaining_bytes = ListSerializeDeserialize.deserialize(bytes_str)
+        return set(items), remaining_bytes
+
+
+class FrozenSetSerializeDeserialize(SetSerializeDeserialize):
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[frozenset, bytes]:
+        items, remaining_bytes = ListSerializeDeserialize.deserialize(bytes_str)
+        return frozenset(items), remaining_bytes
+
+
+class PathSerializeDeserialize(SerializableBase):
+    """pathlib paths, serialized as a string and rebuilt as a ``pathlib.Path`` of the local platform"""
+    @staticmethod
+    def serialize(path: PurePath) -> bytes:
+        return StringSerializeDeserialize.serialize(str(path))
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[Path, bytes]:
+        path_str, remaining_bytes = StringSerializeDeserialize.deserialize(bytes_str)
+        return Path(path_str), remaining_bytes
+
+
+class DatetimeSerializeDeserialize(SerializableBase):
+    """datetime, serialized as an ISO 8601 string (timezone and microseconds are kept)"""
+    @staticmethod
+    def serialize(dt: datetime) -> bytes:
+        return StringSerializeDeserialize.serialize(dt.isoformat())
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[datetime, bytes]:
+        iso, remaining_bytes = StringSerializeDeserialize.deserialize(bytes_str)
+        return datetime.fromisoformat(iso), remaining_bytes
+
+
+class DateSerializeDeserialize(SerializableBase):
+    """date, serialized as an ISO 8601 string"""
+    @staticmethod
+    def serialize(d: date) -> bytes:
+        return StringSerializeDeserialize.serialize(d.isoformat())
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[date, bytes]:
+        iso, remaining_bytes = StringSerializeDeserialize.deserialize(bytes_str)
+        return date.fromisoformat(iso), remaining_bytes
+
+
+class TimeSerializeDeserialize(SerializableBase):
+    """time, serialized as an ISO 8601 string"""
+    @staticmethod
+    def serialize(t: time) -> bytes:
+        return StringSerializeDeserialize.serialize(t.isoformat())
+
+    @staticmethod
+    def deserialize(bytes_str: bytes) -> Tuple[time, bytes]:
+        iso, remaining_bytes = StringSerializeDeserialize.deserialize(bytes_str)
+        return time.fromisoformat(iso), remaining_bytes
+
+
 ser_factory.register_from_type(
     type(None), NoneSerializeDeserialize.serialize, NoneSerializeDeserialize.deserialize
 )
@@ -422,5 +523,29 @@ ser_factory.register_from_type(OrderedDict,
                                OrderedDictSerializeDeserialize.serialize,
                                OrderedDictSerializeDeserialize.deserialize)
 
+# numpy scalars: the type name written in the stream is the numpy class name (float32, int8...)
+for _np_type in (np.float16, np.float32, np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32,
+                 np.uint64, np.complex64):
+    ser_factory.register_from_type(_np_type,
+                                   NumpyScalarSerializeDeserialize.serialize,
+                                   NumpyScalarSerializeDeserialize.deserialize)
+# the numpy scalars having an exact python equivalent are deserialized as the python type
+for _np_type in (np.float64, np.int64, np.complex128):
+    ser_factory.register_from_type(_np_type,
+                                   NumpyScalarSerializeDeserialize.serialize,
+                                   ScalarSerializeDeserialize.deserialize)
+# np.bool_ is named 'bool' in the stream and is therefore deserialized as the python bool
+ser_factory.register_from_type(np.bool_,
+                               NumpyScalarSerializeDeserialize.serialize,
+                               ScalarSerializeDeserialize.deserialize)
 
-
+ser_factory.register_from_type(set, SetSerializeDeserialize.serialize, SetSerializeDeserialize.deserialize)
+ser_factory.register_from_type(frozenset, FrozenSetSerializeDeserialize.serialize,
+                               FrozenSetSerializeDeserialize.deserialize)
+for _path_type in (PosixPath, WindowsPath):
+    ser_factory.register_from_type(_path_type, PathSerializeDeserialize.serialize,
+                                   PathSerializeDeserialize.deserialize)
+ser_factory.register_from_type(datetime, DatetimeSerializeDeserialize.serialize,
+                               DatetimeSerializeDeserialize.deserialize)
+ser_factory.register_from_type(date, DateSerializeDeserialize.serialize, DateSerializeDeserialize.deserialize)
+ser_factory.register_from_type(time, TimeSerializeDeserialize.serialize, TimeSerializeDeserialize.deserialize)
